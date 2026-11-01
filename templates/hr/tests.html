@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Тесты — Панель HR{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-clipboard-check"></i> Тесты
+    </h2>
+    <div>
+        <a href="{% url 'hr_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад
+        </a>
+        <a href="{% url 'hr_test_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Добавить тест
+        </a>
+    </div>
+</div>
+
+<!-- Фильтр -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label mb-0 small text-muted">Фильтр по категории:</label>
+            </div>
+            <div class="col-md-6">
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    <option value="">— Все категории —</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}"
+                                {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                {% if selected_category %}
+                    <a href="{% url 'hr_tests' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x"></i> Сброс
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Список -->
+{% if tests %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Название</th>
+                    <th>Категория</th>
+                    <th>Вопросов</th>
+                    <th>Проходной</th>
+                    <th>Время</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tests %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <strong>{{ t.title }}</strong>
+                            {% if t.description %}
+                                <br><small class="text-muted">{{ t.description|truncatewords:10 }}</small>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary">{{ t.category.name }}</span></td>
+                        <td><span class="badge bg-info text-dark">{{ t.questions.count }}</span></td>
+                        <td>{{ t.pass_score }}%</td>
+                        <td>{{ t.time_limit }} мин</td>
+                        <td class="text-end">
+                            <a href="{% url 'hr_test_edit' t.id %}"
+                               class="btn btn-sm btn-warning" title="Редактировать">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'hr_test_delete' t.id %}"
+                               class="btn btn-sm btn-danger" title="Удалить">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i>
+        {% if selected_category %}
+            В этой категории пока нет тестов.
+        {% else %}
+            Тестов пока нет. <a href="{% url 'hr_test_add' %}">Добавить первый</a>.
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

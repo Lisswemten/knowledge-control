@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить назначение{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm border-danger">
+            <div class="card-body p-4">
+
+                <h3 class="text-danger mb-4">
+                    <i class="bi bi-exclamation-triangle"></i> Удаление назначения
+                </h3>
+
+                <p>Вы уверены, что хотите удалить назначение теста:</p>
+
+                <div class="alert alert-light border">
+                    <div><strong>Тест:</strong> {{ assignment.test.title }}</div>
+                    <div><strong>Сотрудник:</strong> {{ assignment.employee.get_full_name|default:assignment.employee.username }}</div>
+                    <div><strong>Статус:</strong> {{ assignment.get_status_display }}</div>
+                </div>
+
+                {% if assignment.status == 'passed' or assignment.status == 'failed' %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        По этому назначению уже есть попытка прохождения.
+                        Вместе с назначением удалится история попыток.
+                    </div>
+                {% endif %}
+
+                <p class="text-muted">Это действие невозможно отменить.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'hr_assignments' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Отмена
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Удалить
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

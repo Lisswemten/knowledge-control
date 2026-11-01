@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Отчёт по сотрудникам — Контроль знаний{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-people"></i> Отчёт по сотрудникам
+    </h2>
+    <a href="{% url 'manager_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Назад
+    </a>
+</div>
+
+{% if employee_stats %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Сотрудник</th>
+                    <th>Отдел</th>
+                    <th>Назначено</th>
+                    <th>Пройдено</th>
+                    <th>Не пройдено</th>
+                    <th>Средний %</th>
+                    <th>Последняя попытка</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in employee_stats %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ s.employee.get_full_name|default:s.employee.username }}</td>
+                        <td>{{ s.employee.profile.department|default:"—" }}</td>
+                        <td>{{ s.total }}</td>
+                        <td><span class="text-success">✔ {{ s.passed }}</span></td>
+                        <td>
+                            {% if s.failed > 0 %}
+                                <span class="text-danger">✖ {{ s.failed }}</span>
+                            {% else %}
+                                {{ s.failed }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if s.avg_percent >= 80 %}
+                                <span class="badge bg-success">{{ s.avg_percent }}%</span>
+                            {% elif s.avg_percent >= 50 %}
+                                <span class="badge bg-warning text-dark">{{ s.avg_percent }}%</span>
+                            {% elif s.avg_percent > 0 %}
+                                <span class="badge bg-danger">{{ s.avg_percent }}%</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if s.last_attempt %}
+                                <small>{{ s.last_attempt.finished_at|date:"d.m.Y H:i" }}</small>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Сотрудников пока нет.
+    </div>
+{% endif %}
+{% endblock %}

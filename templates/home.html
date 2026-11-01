@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная — Контроль знаний{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4 mb-3">Система контроля знаний сотрудников</h1>
+    <p class="lead mb-4">
+        Добро пожаловать! Здесь вы можете проходить тесты, отслеживать прогресс
+        и управлять знаниями сотрудников.
+    </p>
+
+    {% if not user.is_authenticated %}
+        <a href="/login/" class="btn btn-primary btn-lg me-2">
+            <i class="bi bi-box-arrow-in-right"></i> Войти
+        </a>
+        <a href="/register/" class="btn btn-outline-primary btn-lg">
+            <i class="bi bi-person-plus"></i> Регистрация
+        </a>
+    {% else %}
+        <a href="{% url 'profile' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-person-circle"></i> Перейти в профиль
+        </a>
+    {% endif %}
+</div>
+{% endblock %}

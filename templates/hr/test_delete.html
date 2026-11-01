@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить тест{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm border-danger">
+            <div class="card-body p-4">
+
+                <h3 class="text-danger mb-4">
+                    <i class="bi bi-exclamation-triangle"></i> Удаление теста
+                </h3>
+
+                <p>Вы уверены, что хотите удалить тест:</p>
+                <div class="alert alert-light border">
+                    <em>«{{ test.title }}»</em>
+                </div>
+
+                {% if assignments_count %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Внимание!</strong> К этому тесту привязано
+                        <strong>{{ assignments_count }}</strong> назначение(й).
+                        Вместе с тестом удалятся все назначения и попытки сотрудников.
+                    </div>
+                {% endif %}
+
+                <p class="text-muted">Это действие невозможно отменить.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'hr_tests' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Отмена
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Удалить
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

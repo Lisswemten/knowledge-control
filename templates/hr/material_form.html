@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Загрузить материал — Панель HR{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <h3 class="mb-4">
+                    <i class="bi bi-upload"></i> Загрузить материал
+                </h3>
+
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Название <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control" required maxlength="200">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Категория <span class="text-danger">*</span></label>
+                        <select name="category" class="form-select" required>
+                            <option value="">— Выберите категорию —</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Файл <span class="text-danger">*</span></label>
+                        <input type="file" name="file" class="form-control" required
+                               accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.txt,.png,.jpg,.jpeg">
+                        <div class="form-text">
+                            Разрешены: pdf, doc, docx, xls, xlsx, odt, txt, png, jpg. Максимум 10 МБ.
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'hr_materials' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Загрузить
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

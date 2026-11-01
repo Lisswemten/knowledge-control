@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Панель HR — Контроль знаний{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-person-badge"></i> Панель HR
+    </h2>
+    <a href="{% url 'profile' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-person"></i> Мой профиль
+    </a>
+</div>
+
+<!-- Счётчики -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-2">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-tags fs-1 text-primary"></i>
+                <div class="fs-3 fw-bold">{{ categories_count }}</div>
+                <div class="text-muted small">Категорий</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-question-circle fs-1 text-success"></i>
+                <div class="fs-3 fw-bold">{{ questions_count }}</div>
+                <div class="text-muted small">Вопросов</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-clipboard-check fs-1 text-warning"></i>
+                <div class="fs-3 fw-bold">{{ tests_count }}</div>
+                <div class="text-muted small">Тестов</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-send fs-1 text-danger"></i>
+                <div class="fs-3 fw-bold">{{ assignments_count }}</div>
+                <div class="text-muted small">Назначений</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Быстрые действия -->
+<h4 class="mb-3">
+    <i class="bi bi-lightning"></i> Быстрые действия
+</h4>
+<div class="row mb-4">
+    <div class="col-md mb-2">
+        <a href="{% url 'hr_categories' %}" class="btn btn-outline-primary w-100 py-3">
+            <i class="bi bi-tags"></i> Категории
+        </a>
+    </div>
+    <div class="col-md mb-2">
+        <a href="{% url 'hr_questions' %}" class="btn btn-outline-success w-100 py-3">
+            <i class="bi bi-question-circle"></i> Вопросы
+        </a>
+    </div>
+    <div class="col-md mb-2">
+        <a href="{% url 'hr_tests' %}" class="btn btn-outline-warning w-100 py-3">
+            <i class="bi bi-clipboard-check"></i> Тесты
+        </a>
+    </div>
+    <div class="col-md mb-2">
+        <a href="{% url 'hr_assignments' %}" class="btn btn-outline-danger w-100 py-3">
+            <i class="bi bi-send"></i> Назначения
+        </a>
+    </div>
+    <div class="col-md mb-2">
+        <a href="{% url 'hr_materials' %}" class="btn btn-outline-info w-100 py-3">
+            <i class="bi bi-folder"></i> Материалы
+        </a>
+    </div>
+</div>
+
+<!-- Последние назначения -->
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light">
+                <i class="bi bi-send"></i> Последние назначения
+            </div>
+            <div class="card-body">
+                {% if recent_assignments %}
+                    <ul class="list-group list-group-flush">
+                        {% for a in recent_assignments %}
+                            <li class="list-group-item d-flex justify-content-between">
+                                <div>
+                                    <strong>{{ a.employee.first_name|default:a.employee.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ a.test.title }}</small>
+                                </div>
+                                <span class="badge bg-secondary align-self-start">
+                                    {{ a.get_status_display }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">Пока нет назначений.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light">
+                <i class="bi bi-clock-history"></i> Последние попытки
+            </div>
+            <div class="card-body">
+                {% if recent_attempts %}
+                    <ul class="list-group list-group-flush">
+                        {% for at in recent_attempts %}
+                            <li class="list-group-item d-flex justify-content-between">
+                                <div>
+                                    <strong>{{ at.employee.first_name|default:at.employee.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ at.assignment.test.title }}</small>
+                                </div>
+                                <span class="badge {% if at.passed %}bg-success{% elif at.passed == False %}bg-danger{% else %}bg-warning text-dark{% endif %} align-self-start">
+                                    {{ at.score }}/{{ at.total }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">Пока нет попыток.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

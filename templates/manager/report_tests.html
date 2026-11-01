@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Отчёт по тестам — Контроль знаний{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-clipboard-data"></i> Отчёт по тестам
+    </h2>
+    <a href="{% url 'manager_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Назад
+    </a>
+</div>
+
+{% if test_stats %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Тест</th>
+                    <th>Категория</th>
+                    <th>Назначено</th>
+                    <th>Пройдено</th>
+                    <th>Не пройдено</th>
+                    <th>Средний %</th>
+                    <th>% сдачи</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in test_stats %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ s.test.title }}</strong></td>
+                        <td><span class="badge bg-secondary">{{ s.test.category.name }}</span></td>
+                        <td>{{ s.assignments_total }}</td>
+                        <td><span class="text-success">✔ {{ s.passed }}</span></td>
+                        <td><span class="text-danger">✖ {{ s.failed }}</span></td>
+                        <td>{{ s.avg_percent }}%</td>
+                        <td>
+                            {% if s.pass_rate >= 80 %}
+                                <span class="badge bg-success">{{ s.pass_rate }}%</span>
+                            {% elif s.pass_rate >= 50 %}
+                                <span class="badge bg-warning text-dark">{{ s.pass_rate }}%</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ s.pass_rate }}%</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Тестов пока нет.
+    </div>
+{% endif %}
+{% endblock %}

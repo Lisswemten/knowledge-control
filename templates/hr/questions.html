@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Вопросы — Панель HR{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-question-circle"></i> Вопросы
+    </h2>
+    <div>
+        <a href="{% url 'hr_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад
+        </a>
+        <a href="{% url 'hr_question_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Добавить вопрос
+        </a>
+    </div>
+</div>
+
+<!-- Фильтр по категории -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label mb-0 small text-muted">Фильтр по категории:</label>
+            </div>
+            <div class="col-md-6">
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    <option value="">— Все категории —</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}"
+                                {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                {% if selected_category %}
+                    <a href="{% url 'hr_questions' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x"></i> Сброс
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Список -->
+{% if questions %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Вопрос</th>
+                    <th>Категория</th>
+                    <th>Тип</th>
+                    <th>Ответов</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in questions %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ q.text|truncatewords:12 }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ q.category.name }}</span>
+                        </td>
+                        <td>
+                            {% if q.question_type == 'single' %}
+                                <span class="badge bg-info text-dark">Один</span>
+                            {% elif q.question_type == 'multiple' %}
+                                <span class="badge bg-primary">Несколько</span>
+                            {% elif q.question_type == 'text' %}
+                                <span class="badge bg-warning text-dark">Текст</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ q.answers.count }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'hr_question_edit' q.id %}"
+                               class="btn btn-sm btn-warning" title="Редактировать">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'hr_question_delete' q.id %}"
+                               class="btn btn-sm btn-danger" title="Удалить">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i>
+        {% if selected_category %}
+            В этой категории пока нет вопросов.
+        {% else %}
+            Вопросов пока нет. <a href="{% url 'hr_question_add' %}">Добавить первый</a>.
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if action == 'add' %}Добавить вопрос{% else %}Редактировать вопрос{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <h3 class="mb-4">
+                    {% if action == 'add' %}
+                        <i class="bi bi-plus-circle"></i> Добавить вопрос
+                    {% else %}
+                        <i class="bi bi-pencil"></i> Редактировать вопрос
+                    {% endif %}
+                </h3>
+
+                <form method="post" novalidate id="questionForm">
+                    {% csrf_token %}
+
+                    <!-- Категория -->
+                    <div class="mb-3">
+                        <label class="form-label">Категория <span class="text-danger">*</span></label>
+                        <select name="category" class="form-select" required>
+                            <option value="">— Выберите категорию —</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}"
+                                    {% if question.category_id == cat.id %}selected{% endif %}>
+                                    {{ cat.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Текст вопроса -->
+                    <div class="mb-3">
+                        <label class="form-label">Текст вопроса <span class="text-danger">*</span></label>
+                        <textarea name="text"
+                                  class="form-control"
+                                  rows="3"
+                                  required>{{ question.text|default:'' }}</textarea>
+                    </div>
+
+                    <!-- Тип вопроса -->
+                    <div class="mb-3">
+                        <label class="form-label">Тип вопроса <span class="text-danger">*</span></label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio"
+                                       name="question_type" id="type_single"
+                                       value="single"
+                                       {% if question.question_type == 'single' or not question %}checked{% endif %}>
+                                <label class="form-check-label" for="type_single">Один ответ</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio"
+                                       name="question_type" id="type_multiple"
+                                       value="multiple"
+                                       {% if question.question_type == 'multiple' %}checked{% endif %}>
+                                <label class="form-check-label" for="type_multiple">Несколько ответов</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio"
+                                       name="question_type" id="type_text"
+                                       value="text"
+                                       {% if question.question_type == 'text' %}checked{% endif %}>
+                                <label class="form-check-label" for="type_text">Развёрнутый ответ</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Блок вариантов ответов -->
+                    <div id="answersBlock">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">
+                                Варианты ответа <span class="text-danger">*</span>
+                            </label>
+                            <button type="button" id="addAnswerBtn" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-plus-circle"></i> Добавить вариант
+                            </button>
+                        </div>
+
+                        <div class="alert alert-light border small mb-2">
+                            <i class="bi bi-info-circle"></i>
+                            Отметьте галочкой <strong>правильный</strong> ответ.
+                            Для типа «Один ответ» — только один правильный.
+                        </div>
+
+                        <div id="answersContainer">
+                            {% if question %}
+                                {% for ans in question.answers.all %}
+                                    <div class="input-group mb-2 answer-row">
+                                        <div class="input-group-text">
+                                            <input type="checkbox"
+                                                   name="answer_correct_{{ forloop.counter0 }}"
+                                                   class="form-check-input mt-0"
+                                                   {% if ans.is_correct %}checked{% endif %}>
+                                        </div>
+                                        <input type="text"
+                                               name="answer_text[]"
+                                               class="form-control"
+                                               value="{{ ans.text }}"
+                                               placeholder="Текст варианта ответа">
+                                        <button type="button" class="btn btn-outline-danger remove-answer">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                {# По умолчанию 4 пустые строки #}
+                                {% for i in "1234" %}
+                                    <div class="input-group mb-2 answer-row">
+                                        <div class="input-group-text">
+                                            <input type="checkbox"
+                                                   name="answer_correct_{{ forloop.counter0 }}"
+                                                   class="form-check-input mt-0">
+                                        </div>
+                                        <input type="text"
+                                               name="answer_text[]"
+                                               class="form-control"
+                                               placeholder="Текст варианта ответа">
+                                        <button type="button" class="btn btn-outline-danger remove-answer">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Предупреждение для text-вопросов -->
+                    <div id="textWarning" class="alert alert-info d-none">
+                        <i class="bi bi-info-circle"></i>
+                        Для развёрнутого ответа варианты не нужны — сотрудник напишет текст или прикрепит файл.
+                    </div>
+
+                    <!-- Кнопки -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'hr_questions' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i>
+                            {% if action == 'add' %}Добавить{% else %}Сохранить{% endif %}
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/question_form.js' %}"></script>
+{% endblock %}

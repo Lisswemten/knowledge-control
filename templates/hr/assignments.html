@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Назначения — Панель HR{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-send"></i> Назначения тестов
+    </h2>
+    <div>
+        <a href="{% url 'hr_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад
+        </a>
+        <a href="{% url 'hr_assignment_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Назначить тест
+        </a>
+    </div>
+</div>
+
+<!-- Фильтры -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small text-muted mb-1">Статус:</label>
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">— Все статусы —</option>
+                    {% for code, label in status_choices %}
+                        <option value="{{ code }}"
+                                {% if selected_status == code %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label small text-muted mb-1">Тест:</label>
+                <select name="test" class="form-select" onchange="this.form.submit()">
+                    <option value="">— Все тесты —</option>
+                    {% for t in tests %}
+                        <option value="{{ t.id }}"
+                                {% if selected_test == t.id|stringformat:"s" %}selected{% endif %}>
+                            {{ t.title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                {% if selected_status or selected_test %}
+                    <a href="{% url 'hr_assignments' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x"></i> Сбросить фильтры
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Список -->
+{% if assignments %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Сотрудник</th>
+                    <th>Тест</th>
+                    <th>Статус</th>
+                    <th>Назначено</th>
+                    <th>Срок</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in assignments %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {{ a.employee.get_full_name|default:a.employee.username }}
+                            {% if a.employee.profile.department %}
+                                <br><small class="text-muted">{{ a.employee.profile.department }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ a.test.title }}</td>
+                        <td>
+                            {% if a.status == 'assigned' %}
+                                <span class="badge bg-info text-dark">Назначен</span>
+                            {% elif a.status == 'in_progress' %}
+                                <span class="badge bg-warning text-dark">В процессе</span>
+                            {% elif a.status == 'passed' %}
+                                <span class="badge bg-success">✔ Пройден</span>
+                            {% elif a.status == 'failed' %}
+                                <span class="badge bg-danger">✖ Не пройден</span>
+                            {% elif a.status == 'expired' %}
+                                <span class="badge bg-secondary">⏰ Просрочен</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small>{{ a.assigned_at|date:"d.m.Y H:i" }}</small>
+                            {% if a.assigned_by %}
+                                <br><small class="text-muted">от {{ a.assigned_by.username }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if a.deadline %}
+                                <small>{{ a.deadline|date:"d.m.Y H:i" }}</small>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'hr_assignment_delete' a.id %}"
+                               class="btn btn-sm btn-danger" title="Удалить">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i>
+        {% if selected_status or selected_test %}
+            По выбранным фильтрам ничего не найдено.
+        {% else %}
+            Назначений пока нет. <a href="{% url 'hr_assignment_add' %}">Назначить первый</a>.
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

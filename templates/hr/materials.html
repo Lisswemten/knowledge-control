@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Материалы — Панель HR{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-folder"></i> Материалы для подготовки
+    </h2>
+    <div>
+        <a href="{% url 'hr_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад
+        </a>
+        <a href="{% url 'hr_material_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Загрузить материал
+        </a>
+    </div>
+</div>
+
+{% if materials %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Название</th>
+                    <th>Категория</th>
+                    <th>Файл</th>
+                    <th>Загрузил</th>
+                    <th>Дата</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in materials %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ m.title }}</strong></td>
+                        <td><span class="badge bg-secondary">{{ m.category.name }}</span></td>
+                        <td>
+                            <a href="{{ m.file.url }}" target="_blank">
+                                <i class="bi bi-download"></i> Скачать
+                            </a>
+                        </td>
+                        <td>{{ m.uploaded_by.username|default:"—" }}</td>
+                        <td><small>{{ m.uploaded_at|date:"d.m.Y H:i" }}</small></td>
+                        <td class="text-end">
+                            <a href="{% url 'hr_material_delete' m.id %}"
+                               class="btn btn-sm btn-danger" title="Удалить">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Материалов пока нет.
+        <a href="{% url 'hr_material_add' %}">Загрузить первый</a>.
+    </div>
+{% endif %}
+{% endblock %}

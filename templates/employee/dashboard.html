@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет — Контроль знаний{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">
+    <i class="bi bi-person-workspace"></i> Личный кабинет сотрудника
+</h2>
+
+<!-- Приветствие -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex align-items-center">
+            {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" class="rounded-circle me-3"
+                     style="width: 64px; height: 64px; object-fit: cover;" alt="Аватар">
+            {% else %}
+                <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center me-3"
+                     style="width: 64px; height: 64px;">
+                    <i class="bi bi-person text-white" style="font-size: 2rem;"></i>
+                </div>
+            {% endif %}
+            <div>
+                <h5 class="mb-0">{{ user.first_name }} {{ user.last_name }}</h5>
+                <small class="text-muted">
+                    {{ user.profile.position|default:"—" }} · {{ user.profile.department|default:"—" }}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Активные назначения -->
+<h4 class="mb-3">
+    <i class="bi bi-clipboard-check"></i> Активные тесты
+</h4>
+
+{% if active_assignments %}
+    <div class="row">
+        {% for a in active_assignments %}
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ a.test.title }}</h5>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-tag"></i> {{ a.test.category.name }}
+                        </p>
+                        <p class="card-text small">{{ a.test.description|default:"" }}</p>
+
+                        <div class="mb-3">
+                            {% if a.status == 'assigned' %}
+                                <span class="badge bg-info">Назначен</span>
+                            {% elif a.status == 'in_progress' %}
+                                <span class="badge bg-warning text-dark">В процессе</span>
+                            {% endif %}
+
+                            <span class="badge bg-secondary">
+                                ⏱ {{ a.test.time_limit }} мин
+                            </span>
+                            <span class="badge bg-secondary">
+                                ★ {{ a.test.pass_score }}%
+                            </span>
+                        </div>
+
+                        {% if a.deadline %}
+                            <p class="small text-muted mb-2">
+                                <i class="bi bi-clock"></i> Срок: {{ a.deadline|date:"d.m.Y H:i" }}
+                            </p>
+                        {% endif %}
+
+                        <div class="mt-auto">
+                            {% if a.status == 'assigned' %}
+                                <a href="{% url 'test_start' a.id %}" class="btn btn-primary w-100">
+                                    <i class="bi bi-play-circle"></i> Начать тест
+                                </a>
+                            {% elif a.status == 'in_progress' %}
+                                <a href="{% url 'test_process' a.id %}" class="btn btn-warning w-100">
+                                    <i class="bi bi-arrow-right-circle"></i> Продолжить
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> У вас пока нет активных тестов.
+    </div>
+{% endif %}
+
+<!-- Завершённые -->
+<h4 class="mb-3 mt-4">
+    <i class="bi bi-clock-history"></i> Завершённые тесты
+</h4>
+
+{% if finished_assignments %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Тест</th>
+                    <th>Категория</th>
+                    <th>Статус</th>
+                    <th>Дата назначения</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in finished_assignments %}
+                    <tr>
+                        <td>{{ a.test.title }}</td>
+                        <td>{{ a.test.category.name }}</td>
+                        <td>
+                            {% if a.status == 'passed' %}
+                                <span class="badge bg-success">✔ Пройден</span>
+                            {% elif a.status == 'failed' %}
+                                <span class="badge bg-danger">✖ Не пройден</span>
+                            {% elif a.status == 'expired' %}
+                                <span class="badge bg-secondary">⏰ Просрочен</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ a.assigned_at|date:"d.m.Y H:i" }}</td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> Подробнее
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-light border">
+        <i class="bi bi-info-circle"></i> Завершённых тестов пока нет.
+    </div>
+{% endif %}
+
+{% endblock %}

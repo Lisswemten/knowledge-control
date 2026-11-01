@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ test.title }} — Прохождение{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+
+        <!-- Шапка с таймером -->
+        <div class="card shadow-sm mb-4 sticky-top" style="top: 70px; z-index: 100;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">{{ test.title }}</h5>
+                    <small class="text-muted">
+                        Вопросов: {{ questions|length }} · Проходной балл: {{ test.pass_score }}%
+                    </small>
+                </div>
+                <div class="text-end">
+                    <div class="text-muted small">Осталось времени</div>
+                    <div id="timer" class="fs-3 fw-bold text-primary">--:--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Форма с вопросами -->
+        <form method="post" enctype="multipart/form-data" id="testForm"
+              action="{% url 'test_submit' assignment.id %}">
+            {% csrf_token %}
+
+            {% for q in questions %}
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">
+                            Вопрос {{ forloop.counter }} из {{ questions|length }}
+                            <span class="badge bg-secondary ms-2">
+                                {{ q.get_question_type_display }}
+                            </span>
+                        </h6>
+                        <p class="fs-5">{{ q.text }}</p>
+
+                        {# Один ответ #}
+                        {% if q.question_type == 'single' %}
+                            {% for a in q.answers.all %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input"
+                                           type="radio"
+                                           name="question_{{ q.id }}"
+                                           id="answer_{{ a.id }}"
+                                           value="{{ a.id }}">
+                                    <label class="form-check-label" for="answer_{{ a.id }}">
+                                        {{ a.text }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+
+                        {# Несколько ответов #}
+                        {% elif q.question_type == 'multiple' %}
+                            {% for a in q.answers.all %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="question_{{ q.id }}"
+                                           id="answer_{{ a.id }}"
+                                           value="{{ a.id }}">
+                                    <label class="form-check-label" for="answer_{{ a.id }}">
+                                        {{ a.text }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+
+                        {# Развёрнутый ответ #}
+                        {% elif q.question_type == 'text' %}
+                            <div class="mb-2">
+                                <textarea class="form-control"
+                                          name="text_{{ q.id }}"
+                                          rows="4"
+                                          placeholder="Введите ответ..."></textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small text-muted">
+                                    <i class="bi bi-paperclip"></i> Прикрепить файл (необязательно)
+                                </label>
+                                <input type="file"
+                                       class="form-control"
+                                       name="file_{{ q.id }}"
+                                       accept=".doc,.docx,.txt,.pdf,.png,.jpg,.jpeg,.xls,.xlsx,.odt">
+                            </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <p class="text-muted small mb-2">
+                        После нажатия «Завершить тест» изменить ответы будет нельзя.
+                    </p>
+                    <button type="submit" class="btn btn-success btn-lg"
+                            onclick="return confirm('Завершить тест и отправить ответы?');">
+                        <i class="bi bi-check-circle"></i> Завершить тест
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Передаём данные для таймера
+    const startedAt = new Date("{{ attempt.started_at|date:'c' }}").getTime();
+    const timeLimitSeconds = {{ time_limit_seconds }};
+</script>
+<script src="{% static 'js/timer.js' %}"></script>
+{% endblock %}
